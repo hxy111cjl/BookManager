@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace表示命名空间 -->
+<mapper namespace="com.oracle.mapper.ProductMapper">
+	<!-- 一对多：查看某一用户及其关联的订单信息 
+	      注意：当关联查询出的列名相同，则需要使用别名区分 -->
+	 <insert id="addProduct" parameterType="product">
+	 	insert into products values(default,#{name},#{price},#{category},#{pnum},#{imgurl},#{description})
+	 </insert>     
+	 <select id="listAll" resultType="product">
+		 select * from products   
+	 </select>   
+	  <select id="listAll" resultType="product" parameterType="String">
+		select count(*) from products 
+		<where>
+			<if test="category!=null and category!='全部商品'">
+				and category=#{category}
+			</if>
+		</where>
+	 </select>   
+	  <select id="findByPage" resultType="product" parameterType="String">
+		select * from products 
+		<where>
+			<if test="category!=null and category!='全部商品'">
+				and category=#{category}
+			</if>
+ 		</where>
+ 		limit ${currentPage},${currentCount}
+	 </select> 
+	   
+	  <select id="findProductById" resultType="product" parameterType="String">
+		select * from products where id=#{id}
+	 </select>     
+	  
+	  <update id="changeProductNum"  parameterType="java.util.List">  
+	    <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+	        update products 
+	        <set>
+	            pnum=pnum-#{item.pnum}
+	        </set>
+	        where id = #{item.id}
+	    </foreach>      
+	</update>
+	<select id="salesList" resultType="product" >
+		 select products.name name,SUM(orderitem.buynum) pnum FROM orders,products,orderItem 
+		 <where> 
+			 orders.id=orderItem.order_id AND products.id=orderItem.product_id AND orders.paystate=1 and year(ordertime)=#{year} and month(ordertime)=#{month} GROUP BY name ORDER BY pnum DESC
+		</where>
+	</select>    
+	<select id="findProductByManyCondition" resultType="product" >
+			select * from products
+ 		 <where> 
+ 		 	<if test="id!=null and id!=''">
+ 		 		and id = #{id}
+ 		 	</if>
+ 		 	<if test="name!=null and name!=''">
+ 		 		and name = #{name}
+ 		 	</if>
+ 		 	<if test="category!=null and category!=''">
+ 		 		and category = #{category}
+ 		 	</if>
+ 		 	<if test="minprice!=null and minprice!='' and maxprice!=null and maxprice!=''">
+ 		 		and price between #{minprice} and #{maxprice}
+ 		 	</if>
+ 		</where>
+	</select>    
+	 
+	 <update id="editProduct" parameterType="product">
+	 	update products 
+	 	<set>
+	 		<if test="name!=null and name!=''">
+ 		 		  name = #{name},
+ 		 	</if>
+ 		 	<if test="price!=null and price!=''">
+ 		 		  price = #{price},
+ 		 	</if>
+ 		 	<if test="pnum!=null and pnum!=''">
+ 		 		  pnum = #{pnum},
+ 		 	</if>
+ 		 	<if test="description!=null and description!=''">
+ 		 		  description = #{description},
+ 		 	</if>
+ 		 	<if test="imgurl!=null and imgurl!=''">
+ 		 		  imgurl = #{imgurl},
+ 		 	</if>
+	 	</set>
+	 	where id=#{id}
+	 
+	 </update>    
+	   
+    <update id="updateProductNum" parameterType="java.util.List">
+	    <foreach collection="OrderItem" item="items" index="index" open="" close="" separator=";">
+	        update products
+	        <set>
+	           <if test="items.pnum != null and items.pnum != ''">
+	               pnum=pnum+#{items.pnum},
+	            </if>
+	        </set>
+	        <where>
+	            id = #{items.id,jdbcType=VARCHAR}
+	        </where>
+	    </foreach>
+	</update>
+  
+	      
+	      
+	      
+	      
+	      
+	<!-- <select id="findUserWithOrders" parameterType="Integer" 
+						   resultMap="UserWithOrdersResult">
+		SELECT u.*,o.id as orders_id,o.number 
+		from tb_user u,tb_orders o 
+		WHERE u.id=o.user_id 
+         and u.id=#{id}
+	</select>
+	<resultMap type="User" id="UserWithOrdersResult">
+		<id property="id" column="id"/>
+		<result property="username" column="username"/>
+		<result property="address" column="address"/>
+		一对多关联映射：collection 
+			ofType表示属性集合中元素的类型，List<Orders>属性即Orders类
+		<collection property="ordersList" ofType="Orders">
+			<id property="id" column="orders_id"/>
+			<result property="number" column="number"/>
+		</collection>
+	</resultMap> -->
+</mapper>

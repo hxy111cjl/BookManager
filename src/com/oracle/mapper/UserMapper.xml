@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace表示命名空间 -->
+<mapper namespace="com.oracle.mapper.UserMapper">
+	<!-- 一对多：查看某一用户及其关联的订单信息 
+	      注意：当关联查询出的列名相同，则需要使用别名区分 -->
+	<insert id="addUser" parameterType="user" >
+		insert into user(username,password,gender,email,telephone,introduce,registTime) values(#{username},#{password},#{gender},#{email},#{telephone},#{introduce},)";
+	</insert>
+	 <select id="findUserByUsernameAndPassword" resultType="user">
+		 select * from user where username=#{username} and password=#{password}
+	 </select>
+</mapper>
